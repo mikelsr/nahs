@@ -1,0 +1,10 @@
+dist: bionic
+
+language: go
+
+go:
+  - 1.14.1
+
+script:
+  - env GO111MODULE=on go build -x
+  - env GO111MODULE=on go test -v --timeout 30s ./...

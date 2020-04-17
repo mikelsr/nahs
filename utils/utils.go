@@ -2,8 +2,10 @@ package utils
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // GetProjectDir returns the absolute path to the source code of the
@@ -13,5 +15,11 @@ func GetProjectDir() (string, error) {
 	if !ok {
 		return "", errors.New("Failed to locate project")
 	}
-	return filepath.Abs(filepath.Dir(fileName))
+	dir, err := filepath.Abs(filepath.Dir(fileName))
+	if err != nil {
+		return "", err
+	}
+	path := strings.Split(dir, string(os.PathSeparator))
+	dir = "/" + filepath.Join(path[:len(path)-1]...)
+	return dir, nil
 }

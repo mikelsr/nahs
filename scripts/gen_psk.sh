@@ -6,6 +6,9 @@ conf_dir="${nahs_dir}/config"
 psk_file="${conf_dir}/private_network.psk"
 
 mkdir "${nahs_dir}/config" 2> /dev/null
-echo $(hexdump -n 16 -e '4/4 "%08X"' /dev/random | awk '{print tolower($0)}') >\
-	"${nahs_dir}/config/private_network.psk"
+
+header="/key/swarm/psk/1.0.0/\n/base16/\n"
+
+printf ${header} > ${psk_file}
+printf "$(hexdump -n 32 -e '8/4 "%08X"' /dev/random | awk '{print tolower($0)}')" >> ${psk_file}
 echo "Wrote PSK to file ${psk_file}"

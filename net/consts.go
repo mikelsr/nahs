@@ -9,5 +9,5 @@ const (
 
 var (
 	listenAddrs    = []string{listenAddrTCPIPv4, listenAddrTCPIPv6}
-	privNetPSKFile = filepath.Join("cofig", "private_network.psk")
+	privNetPSKFile = filepath.Join("config", "private_network.psk")
 )

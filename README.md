@@ -2,4 +2,4 @@
 
 Network of Autonomous and Heterogeneous Services (NaHS)
 
-[logo]: .res/img/nahs.png "Logo Title Text 2"
+[logo]: .res/img/nahs.png "NaHS logo"

@@ -10,5 +10,5 @@ env:
   - GOPRIVATE=github.com
 
 script:
-  - go build -x
+  # - go build -x
   - go test -v --timeout 30s ./...

@@ -5,10 +5,6 @@ language: go
 go:
   - 1.14.1
 
-env:
-  - GO111MODULE=on
-  - GOPRIVATE=github.com
-
 script:
-  # - go build -x
-  - go test -v --timeout 30s ./...
+  # - env GO111MODULE=on GOPRIVATE=github.com go build -x
+  - env GO111MODULE=on GOPRIVATE=github.com go test -v --timeout 30s ./...

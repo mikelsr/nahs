@@ -30,10 +30,12 @@ func NewNode(options ...libp2p.Option) *Node {
 
 	// Contatenate options parameter to default options
 	opt := append(options, []libp2p.Option{
-		// Attempt to open ports using uPNP for NATed hosts
-		libp2p.NATPortMap(),
+		// support any other default transports (TCP)
+		libp2p.DefaultTransports,
 		// Let this host use relays and advertise itself on relays
 		libp2p.EnableAutoRelay(),
+		// Attempt to open ports using uPNP for NATed hosts
+		libp2p.NATPortMap(),
 	}...)
 
 	// opt = append(opt, libp2p.PrivateNetwork(loadPrivNetPSK()))

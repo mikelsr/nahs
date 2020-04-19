@@ -1,0 +1,6 @@
+A {
+        role Ra, Rb
+        parameter out ID key
+
+        Ra -> Rb: Aa[out ID key]
+}

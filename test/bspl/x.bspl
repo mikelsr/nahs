@@ -1,0 +1,7 @@
+X {
+        role Rx, Ry
+        parameter out ID key, out n
+
+        Rx -> Ry: Ax[out ID key]
+        Ry -> Rx: Ay[out ID key, out n]
+}

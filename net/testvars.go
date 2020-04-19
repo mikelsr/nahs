@@ -22,6 +22,9 @@ var (
 	}
 	testKeysPath = filepath.Join(testPath, "keys")
 	testNodeN    = 5
+
+	tp1, tp2 bspl.Protocol
+	testKeys []*crypto.PrivKey
 )
 
 func _genTestPath() string {

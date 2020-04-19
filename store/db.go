@@ -27,23 +27,23 @@ func NewDB(path string) (*DB, error) {
 	return &d, err
 }
 
-// Put a Value in the DB
-func (d *DB) Put(k Key, v Value) {
-	d.db.Put(k.dump(), v.dump(), nil)
+// Put a dbvalue in the DB
+func (d *DB) Put(k peer.ID, v []bspl.Protocol) {
+	d.db.Put(dbkey(k).dump(), dbvalue(v).dump(), nil)
 }
 
-// Get a Value from the DB Snapshot
-func (d *DB) Get(k peer.ID) Value {
-	v, err := d.snap.Get(Key(k).dump(), nil)
+// Get a dbvalue from the DB Snapshot
+func (d *DB) Get(k peer.ID) []bspl.Protocol {
+	v, err := d.snap.Get(dbkey(k).dump(), nil)
 	if err != nil {
 		return nil
 	}
-	return loadValue(v)
+	return loadDBvalue(v)
 }
 
 // Has checks if a key exists in the DB Snapshot
 func (d *DB) Has(k peer.ID) bool {
-	has, err := d.snap.Has(Key(k).dump(), nil)
+	has, err := d.snap.Has(dbkey(k).dump(), nil)
 	return err == nil && has
 }
 
@@ -70,19 +70,19 @@ func (d *DB) Close() {
 	d.db.Close()
 }
 
-// Key is a peer.ID mapped to a list of protocols
-type Key peer.ID
+// dbkey is a peer.ID mapped to a list of protocols
+type dbkey peer.ID
 
-// dump a Key to bytes
-func (k Key) dump() []byte {
+// dump a dbkey to bytes
+func (k dbkey) dump() []byte {
 	return []byte(k)
 }
 
-// Value of the Peer info database
-type Value []bspl.Protocol
+// dbvalue of the Peer info database
+type dbvalue []bspl.Protocol
 
-// dump Value to bytes
-func (v Value) dump() []byte {
+// dump dbvalue to bytes
+func (v dbvalue) dump() []byte {
 	buff := bytes.NewBuffer(nil)
 	n := len(v)
 	for i, p := range v {
@@ -98,10 +98,10 @@ func (v Value) dump() []byte {
 	return buff.Bytes()
 }
 
-// loadValue from bytes
-func loadValue(b []byte) Value {
+// loaddbvalue from bytes
+func loadDBvalue(b []byte) dbvalue {
 	bProtos := bytes.Split(b, separator)
-	v := make(Value, len(bProtos))
+	v := make(dbvalue, len(bProtos))
 	for i, bp := range bProtos {
 		reader := bytes.NewReader(bp)
 		protocol, err := bspl.Parse(reader)

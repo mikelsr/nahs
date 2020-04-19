@@ -52,9 +52,9 @@ func loadTestHosts() ([]host.Host, []context.CancelFunc) {
 func generateDB() {
 	if _, err := os.Stat(testDBPath); !os.IsNotExist(err) {
 		fmt.Println("Skipping test DB generation")
-	} else {
-		fmt.Println("Generating test DB")
+		return
 	}
+	fmt.Println("Generating test DB")
 	hosts, cancels := loadTestHosts()
 	r, err := os.Open(testBSPLFiles[0])
 	if err != nil {
@@ -67,10 +67,8 @@ func generateDB() {
 	}
 	p2, _ := bspl.Parse(r)
 
-	id1 := hosts[0].ID()
-	id2 := hosts[1].ID()
-	k1 := Key(id1)
-	k2 := Key(id2)
+	k1 := hosts[0].ID()
+	k2 := hosts[1].ID()
 
 	v1 := []bspl.Protocol{p1, p2}
 	v2 := []bspl.Protocol{p1}

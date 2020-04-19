@@ -3,13 +3,14 @@ package net
 import (
 	"bufio"
 	"bytes"
+	"strings"
 	"sync"
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/mikelsr/bspl"
 )
 
-// setStreamHandler set stream handlers of the node peer
+// setStreamHandler sets the stream handlers of the node peer
 func (n *Node) setStreamHandlers() {
 	n.host.SetStreamHandler(protocolDiscoveryID, n.discoveryHandler)
 }
@@ -49,6 +50,13 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	}
 	bProtos := bytes.Split(b, []byte{exchangeSeparator})
 	protocols := make([]bspl.Protocol, len(bProtos))
+
+	// if  the protocol list was empty, return
+	if len(bProtos) == 1 && len(bProtos[0]) == 1 && bytes.Equal(bProtos[0], []byte{exchangeEnd}) {
+		logger.Info("No new protocols discovered")
+		return
+	}
+	// parse protocols
 	for i, bp := range bProtos {
 		reader := bytes.NewReader(bp)
 		protocol, err := bspl.Parse(reader)
@@ -57,10 +65,12 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 		}
 		protocols[i] = protocol
 	}
-	logger.Info("Discovered protocols: ")
+	var sb strings.Builder
+	sb.WriteString("Discovered protocols: \n")
 	for _, p := range protocols {
-		logger.Info(p)
+		sb.WriteString(p.String())
 	}
+	logger.Info(sb.String())
 }
 
 func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
@@ -68,12 +78,11 @@ func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	k := len(n.protocols)
 	for i, p := range n.protocols {
 		rw.WriteString(p.String())
-		if i == k-1 {
-			rw.WriteByte(exchangeEnd)
-		} else {
+		if i != k-1 {
 			rw.WriteByte(exchangeSeparator)
 		}
 	}
+	rw.WriteByte(exchangeEnd)
 
 	if err := rw.Flush(); err != nil {
 		logger.Infof("Error while writing protocol exchange: %s", err)

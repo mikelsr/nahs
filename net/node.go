@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mikelsr/bspl"
+	"github.com/multiformats/go-multiaddr"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -70,4 +71,9 @@ func NodeFromPrivKey(sk crypto.PrivKey, options ...libp2p.Option) *Node {
 // ID of the libp2p host of the Node
 func (n Node) ID() peer.ID {
 	return n.host.ID()
+}
+
+// Addrs returns the multiaddr of the libp2p host of the Node
+func (n Node) Addrs() []multiaddr.Multiaddr {
+	return n.host.Addrs()
 }

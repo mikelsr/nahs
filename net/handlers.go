@@ -39,7 +39,7 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 	stream.Close()
 }
 
-// discoveryReadData parses
+// discoveryReadData parses the BSPL protocols transmitted by the other peer
 func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	// defer recovery function in case the stream is closed
 	// unexpectedly
@@ -74,6 +74,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	logger.Info(sb.String())
 }
 
+// discoveryWriteData transmits the BSPL protocols of this node to the other
 func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	defer wg.Done()
 	k := len(n.protocols)

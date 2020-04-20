@@ -13,6 +13,7 @@ import (
 // setStreamHandler sets the stream handlers of the node peer
 func (n *Node) setStreamHandlers() {
 	n.host.SetStreamHandler(protocolDiscoveryID, n.discoveryHandler)
+	n.host.SetStreamHandler(protocolEchoID, echoHandler)
 }
 
 // discoveryHandler exchanges the BSPL protocols of the
@@ -86,6 +87,46 @@ func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 
 	if err := rw.Flush(); err != nil {
 		logger.Infof("Error while writing protocol exchange: %s", err)
+		panic(err)
+	}
+}
+
+// echoHandler reads a message and writes the same as
+// a response
+func echoHandler(stream network.Stream) {
+	// defer recovery function in case the stream is closed
+	// unexpectedly
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Infof("Recovered from error in protocol echo %s", r)
+		}
+	}()
+	logger.Info("Opened new Echo stream")
+
+	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	response := echoHandlerRead(rw)
+	echoHandlerWrite(rw, response)
+
+	stream.Close()
+}
+
+// echoHandlerRead and echoHandlerWrite are very short but useful for testing
+func echoHandlerRead(rw *bufio.ReadWriter) []byte {
+	b, err := rw.ReadBytes(exchangeEnd)
+	if err != nil {
+		logger.Info("Error while reading echo message: %s", err)
+		panic(err)
+	}
+	logger.Infof("Received echo message: %s", string(b))
+	return b
+}
+
+// echoHandlerWrite and echoHandlerRead are very short but useful for testing
+func echoHandlerWrite(rw *bufio.ReadWriter, response []byte) {
+	logger.Infof("Send echo message: %s", string(response))
+	rw.Write(response)
+	if err := rw.Flush(); err != nil {
+		logger.Infof("Error while writing echo message: %s", err)
 		panic(err)
 	}
 }

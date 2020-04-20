@@ -20,6 +20,7 @@ const (
 
 	// ID of the BSPL discovery protocol
 	protocolDiscoveryID = protocol.ID("/nahs/bspl/discovery/0.0.1")
+	protocolEchoID      = protocol.ID("/nahs/echo/0.0.1")
 )
 
 var (

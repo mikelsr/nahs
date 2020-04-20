@@ -62,7 +62,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 		reader := bytes.NewReader(bp)
 		protocol, err := bspl.Parse(reader)
 		if err != nil {
-			panic(err)
+			logger.Warn(err)
 		}
 		protocols[i] = protocol
 	}

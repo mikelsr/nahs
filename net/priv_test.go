@@ -17,10 +17,11 @@ func TestPrivateNetwork(t *testing.T) {
 	n1 := NodeFromPrivKey(*testKeys[0], privNetOption)
 	n2 := NodeFromPrivKey(*testKeys[1], privNetOption)
 	n3 := NodeFromPrivKey(*testKeys[2])
+
 	// Add addresses of each peer to the others
 	n1.host.Peerstore().AddAddrs(n2.ID(), n2.Addrs(), peerstore.PermanentAddrTTL)
 	n1.host.Peerstore().AddAddrs(n3.ID(), n3.Addrs(), peerstore.PermanentAddrTTL)
-	n2.host.Peerstore().AddAddrs(n3.ID(), n2.Addrs(), peerstore.PermanentAddrTTL)
+	n2.host.Peerstore().AddAddrs(n1.ID(), n1.Addrs(), peerstore.PermanentAddrTTL)
 	n2.host.Peerstore().AddAddrs(n3.ID(), n3.Addrs(), peerstore.PermanentAddrTTL)
 	n3.host.Peerstore().AddAddrs(n1.ID(), n1.Addrs(), peerstore.PermanentAddrTTL)
 	n3.host.Peerstore().AddAddrs(n2.ID(), n2.Addrs(), peerstore.PermanentAddrTTL)

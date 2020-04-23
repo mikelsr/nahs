@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/davidlazar/go-crypto v0.0.0-20190912175916-7055855a373f // indirect
+	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/ipfs/go-log v1.0.4
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect

@@ -31,9 +31,28 @@ func TestDiscoveryHandler(t *testing.T) {
 	// Spawn and wait for RW routines
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go n1.discoveryReadData(rw, &wg)
+	go n1.discoveryReadData(rw, &wg, n2.ID())
 	go n1.discoveryWriteData(rw, &wg)
 	wg.Wait()
+	if len(n1.Contacts) != 1 {
+		t.FailNow()
+	}
+	for id, services := range n1.Contacts {
+		if id != n2.ID() {
+			t.FailNow()
+		}
+		if len(services) != 1 {
+			t.FailNow()
+		}
+		for key, service := range services {
+			if key != tp2.Key() || service.Protocol.String() != tp2.String() ||
+				len(service.Roles) != 2 {
+				t.FailNow()
+			}
+			break
+		}
+		break
+	}
 }
 
 func TestEchoHandler(t *testing.T) {

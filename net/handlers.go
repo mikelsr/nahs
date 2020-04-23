@@ -10,7 +10,6 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/mikelsr/bspl"
 	"github.com/mikelsr/nahs/events"
 )
 
@@ -39,14 +38,14 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
 	wg.Add(2)
-	go n.discoveryReadData(rw, &wg)
+	go n.discoveryReadData(rw, &wg, stream.Conn().RemotePeer())
 	go n.discoveryWriteData(rw, &wg)
 	wg.Wait()
 	stream.Close()
 }
 
 // discoveryReadData parses the BSPL protocols transmitted by the other peer
-func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
+func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup, sender peer.ID) {
 	// defer recovery function in case the stream is closed
 	// unexpectedly
 	defer wg.Done()
@@ -56,8 +55,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 		panic(err)
 	}
 	bProtos := bytes.Split(b, []byte{exchangeSeparator})
-	protocols := make([]bspl.Protocol, len(bProtos))
-	roles := make([][]bspl.Role, len(bProtos))
+	services := make([]Service, len(bProtos))
 
 	// if  the protocol list was empty, return
 	if len(bProtos) == 1 && len(bProtos[0]) == 1 && bytes.Equal(bProtos[0], []byte{exchangeEnd}) {
@@ -66,17 +64,20 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	}
 	// parse protocols
 	for i, bp := range bProtos {
-		protocol, roleList, err := unwrapProtocol(bp[:len(bp)-1])
+		protocol, roles, err := unwrapProtocol(bp[:len(bp)-1])
 		if err != nil {
 			panic(err)
 		}
-		protocols[i] = protocol
-		roles[i] = roleList
+		services[i] = Service{
+			Protocol: protocol,
+			Roles:    roles,
+		}
 	}
+	n.AddServices(sender, services...)
 	var sb strings.Builder
 	sb.WriteString("Discovered protocols: \n")
-	for _, p := range protocols {
-		sb.WriteString(p.String())
+	for _, s := range services {
+		sb.WriteString(s.Protocol.String())
 	}
 	logger.Info(sb.String())
 }

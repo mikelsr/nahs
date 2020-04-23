@@ -18,6 +18,8 @@ import (
 type Node struct {
 	// libp2p Host
 	host host.Host
+	// Contacts of the Node
+	Contacts Contacts
 	// context of the node and the host
 	context context.Context
 	// host cancelation function
@@ -49,6 +51,7 @@ func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
 
+	n.Contacts = make(Contacts)
 	n.OpenInstances = make(map[string]peer.ID)
 	n.roles = make(map[string][]bspl.Role)
 

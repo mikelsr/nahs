@@ -24,20 +24,31 @@ type Node struct {
 	cancel context.CancelFunc
 	// dht table with information about network peers
 	dht *dht.IpfsDHT
+	// openInstances maps instance keys to peer.IDs to
+	// verify that the node sending the event is the one
+	// who created it
+	openInstances map[string]peer.ID
 	// routing // TODO: rendezvous point?
 	routing *discovery.RoutingDiscovery
 	// services this node offers
 	protocols []bspl.Protocol
 	// resoner to handle BSPL logic
-	reason bspl.Reasoner
+	reasoner bspl.Reasoner
 }
 
 // NewNode is the default constructor for Node.
-func NewNode(options ...libp2p.Option) *Node {
+func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
+	n := newNode(options...)
+	n.reasoner = reasoner
+	return n
+}
+
+func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
 
-	n.context, n.cancel = context.WithCancel(context.Background())
+	n.openInstances = make(map[string]peer.ID)
 
+	n.context, n.cancel = context.WithCancel(context.Background())
 	// Contatenate options parameter to default options
 	opt := append(options, []libp2p.Option{
 		libp2p.ListenAddrStrings(listenAddrs...),
@@ -64,10 +75,16 @@ func NewNode(options ...libp2p.Option) *Node {
 	return n
 }
 
-// NodeFromPrivKey is a NewNode wrapper to create a new Node with the specified
+// NodeFromPrivKey is a newNode wrapper to create a new Node with the specified
 // private key. Additional options may be provided.
-func NodeFromPrivKey(sk crypto.PrivKey, options ...libp2p.Option) *Node {
-	return NewNode(append(options, libp2p.Identity(sk))...)
+func NodeFromPrivKey(reasoner bspl.Reasoner, sk crypto.PrivKey, options ...libp2p.Option) *Node {
+	n := nodeFromPrivKey(sk, options...)
+	n.reasoner = reasoner
+	return n
+}
+
+func nodeFromPrivKey(sk crypto.PrivKey, options ...libp2p.Option) *Node {
+	return newNode(append(options, libp2p.Identity(sk))...)
 }
 
 // ID of the libp2p host of the Node

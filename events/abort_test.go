@@ -26,7 +26,7 @@ func testAbortMarshal(t *testing.T) {
 
 func testAbortUnmarshal(t *testing.T) {
 	i := testInstance()
-	motive := "the need to test this"
+	motive := "the need to test this thing_"
 	expected := MakeAbort(i.Key(), motive)
 	b, _ := expected.Marshal()
 	event, err := expected.Unmarshal(b)

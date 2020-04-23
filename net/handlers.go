@@ -3,17 +3,21 @@ package net
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"strings"
 	"sync"
 
 	"github.com/libp2p/go-libp2p-core/network"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/mikelsr/bspl"
+	"github.com/mikelsr/nahs/events"
 )
 
 // setStreamHandler sets the stream handlers of the node peer
 func (n *Node) setStreamHandlers() {
 	n.host.SetStreamHandler(protocolDiscoveryID, n.discoveryHandler)
 	n.host.SetStreamHandler(protocolEchoID, echoHandler)
+	n.host.SetStreamHandler(protocolEventID, n.eventHandler)
 }
 
 // discoveryHandler exchanges the BSPL protocols of the
@@ -23,7 +27,8 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 	// unexpectedly
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Infof("Recovered from error in protocol exchange %s", r)
+			logger.Errorf("Recovered from error in protocol exchange: %s", r)
+			stream.Close()
 		}
 	}()
 
@@ -46,7 +51,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	defer wg.Done()
 	b, err := rw.ReadBytes(exchangeEnd)
 	if err != nil {
-		logger.Info("Error while reading protocol exchange: %s", err)
+		logger.Errorf("Error while reading protocol exchange: %s", err)
 		panic(err)
 	}
 	bProtos := bytes.Split(b, []byte{exchangeSeparator})
@@ -99,7 +104,8 @@ func echoHandler(stream network.Stream) {
 	// unexpectedly
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Infof("Recovered from error in protocol echo %s", r)
+			logger.Infof("Recovered from error in protocol echo: %s", r)
+			stream.Close()
 		}
 	}()
 	logger.Info("Opened new Echo stream")
@@ -130,4 +136,93 @@ func echoHandlerWrite(rw *bufio.ReadWriter, response []byte) {
 		logger.Infof("Error while writing echo message: %s", err)
 		panic(err)
 	}
+}
+
+func (n *Node) eventHandler(stream network.Stream) {
+	// defer recovery function in case the stream is closed
+	// unexpectedly
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Errorf("Recovered from error in protocol event: %s", r)
+			stream.Close()
+		}
+	}()
+	logger.Info("Opened new Echo stream")
+	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	err := n.runEvent(rw, stream.Conn().RemotePeer())
+	if err != nil {
+		logger.Error(err)
+		rw.Write(exchangeErr)
+	} else {
+		rw.Write(exchangeOk)
+	}
+	rw.WriteByte(exchangeEnd)
+	if err := rw.Flush(); err != nil {
+		logger.Infof("Error while writing echo message: %s", err)
+		panic(err)
+	}
+	stream.Close()
+}
+
+func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
+	// read marshalled event
+	b, err := rw.ReadBytes(exchangeEnd)
+	b = b[:len(b)-1]
+	if err != nil {
+		logger.Error("Error while reading event message: %s", err)
+		return err
+	}
+	// extract event ID
+	id, err := events.ID(b)
+	if err != nil {
+		logger.Error(err)
+		return ErrHandleEvent{ID: "-", Reason: "failed to extract ID"}
+	}
+	// err was already check with events.ID
+	t, _ := events.Type(b)
+	// extract instance key
+	instanceKey, err := events.GetInstanceKey(b)
+	if err != nil {
+		logger.Error(err)
+		return ErrHandleEvent{ID: id, Reason: "Could not extract instance key"}
+	}
+	// check if the instance has a peer assigned
+	s, found := n.openInstances[instanceKey]
+	logger.Infof("Run event '%s' for node '%s'", t, sender)
+	switch t {
+	case events.TypeAbort, events.TypeNewMessage:
+		// abort and newmessage require an existing instance
+		if !found {
+			return ErrHandleEvent{ID: id, Reason: "Instance not found"}
+		}
+		// senders must coincide
+		if s.String() != sender.String() {
+			return ErrHandleEvent{ID: id, Reason: "Unauthorized"}
+		}
+	case events.TypeNewInstance:
+		// newinstance requires the instance to no exist
+		if found {
+			return ErrHandleEvent{ID: id, Reason: "Instance already existed"}
+		}
+
+		// asign sender to instance
+		n.openInstances[instanceKey] = sender
+	}
+	// run event
+	return events.RunEvent(n.reasoner, b)
+}
+
+func readEventResponse(rw *bufio.ReadWriter) (bool, error) {
+	b, err := rw.ReadBytes(exchangeEnd)
+	if err != nil {
+		return false, err
+	}
+	if len(b) < len(exchangeOk) || len(b) < len(exchangeErr) {
+		return false, errors.New("Response is too short")
+	}
+	// response is "ok"
+	if bytes.Equal(b[:len(b)-1], exchangeOk) {
+		return true, nil
+	}
+	return false, nil
 }

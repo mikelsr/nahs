@@ -67,7 +67,7 @@ func (a Abort) Unmarshal(data []byte) (Event, error) {
 	if err := json.Unmarshal(data, wrapper); err != nil {
 		return NIL, err
 	}
-	motive, err := base64.RawStdEncoding.DecodeString(wrapper.Argument)
+	motive, err := base64.StdEncoding.DecodeString(string(wrapper.Argument))
 	if err != nil {
 		return NIL, err
 	}

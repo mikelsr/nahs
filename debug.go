@@ -11,6 +11,6 @@ import (
 )
 
 func main() {
-	n := net.NewNode()
+	n := net.NewNode(nil)
 	fmt.Println(n)
 }

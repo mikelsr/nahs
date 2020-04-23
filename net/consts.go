@@ -31,4 +31,6 @@ var (
 	privNetPSKFile         = filepath.Join("config", "private_network.psk")
 	exchangeSeparator byte = '%'
 	exchangeEnd       byte = '|'
+	exchangeOk             = []byte("ok")
+	exchangeErr            = []byte("err")
 )

@@ -54,12 +54,28 @@ func (e EventWrapper) Marshal() ([]byte, error) {
 
 type genericEvent struct {
 	Type EventType `json:"event_type"`
+	ID   string    `json:"id"`
+}
+
+// ID of the marshalled Event
+func ID(marshalledEvent []byte) (string, error) {
+	ge := new(genericEvent)
+	if err := json.Unmarshal(marshalledEvent, ge); err != nil {
+		return "", err
+	}
+	switch ge.Type {
+	case TypeAbort, TypeNewInstance, TypeNewMessage:
+		break
+	default:
+		return "", errors.New("Unable to identify event type")
+	}
+	return ge.ID, nil
 }
 
 // Type identities the type of a marshalled event
-func Type(data []byte) (EventType, error) {
+func Type(marshalledEvent []byte) (EventType, error) {
 	ge := new(genericEvent)
-	if err := json.Unmarshal(data, ge); err != nil {
+	if err := json.Unmarshal(marshalledEvent, ge); err != nil {
 		return "", err
 	}
 	switch ge.Type {

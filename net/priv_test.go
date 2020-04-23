@@ -14,9 +14,9 @@ func TestPrivateNetwork(t *testing.T) {
 	privNetOption := libp2p.PrivateNetwork(psk)
 	// nodes 1 and 2 will belong to the private network
 	// node 3 wont
-	n1 := NodeFromPrivKey(*testKeys[0], privNetOption)
-	n2 := NodeFromPrivKey(*testKeys[1], privNetOption)
-	n3 := NodeFromPrivKey(*testKeys[2])
+	n1 := nodeFromPrivKey(*testKeys[0], privNetOption)
+	n2 := nodeFromPrivKey(*testKeys[1], privNetOption)
+	n3 := nodeFromPrivKey(*testKeys[2])
 
 	// Add addresses of each peer to the others
 	n1.host.Peerstore().AddAddrs(n2.ID(), n2.Addrs(), peerstore.PermanentAddrTTL)

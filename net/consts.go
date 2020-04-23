@@ -19,8 +19,9 @@ const (
 	rendezvousString = "nahs-rendezvous"
 
 	// ID of the BSPL discovery protocol
-	protocolDiscoveryID = protocol.ID("/nahs/bspl/discovery/0.0.1")
 	protocolEchoID      = protocol.ID("/nahs/echo/0.0.1")
+	protocolEventID     = protocol.ID("/nahs/bspl/event/0.0.1")
+	protocolDiscoveryID = protocol.ID("/nahs/bspl/discovery/0.0.1")
 )
 
 var (

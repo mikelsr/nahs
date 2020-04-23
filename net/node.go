@@ -28,6 +28,8 @@ type Node struct {
 	routing *discovery.RoutingDiscovery
 	// services this node offers
 	protocols []bspl.Protocol
+	// resoner to handle BSPL logic
+	reason bspl.Reasoner
 }
 
 // NewNode is the default constructor for Node.

@@ -5,22 +5,21 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/mikelsr/bspl"
 )
 
 // Abort happens when a party cancels an Instance
 type Abort struct {
-	id       string
-	instance bspl.Instance
-	motive   string
+	id          string
+	instanceKey string
+	motive      string
 }
 
 // MakeAbort is the default constructor for Abort
-func MakeAbort(instance bspl.Instance, motive string) Abort {
+func MakeAbort(instanceKey string, motive string) Abort {
 	return Abort{
-		id:       uuid.New().String(),
-		instance: instance,
-		motive:   motive,
+		id:          uuid.New().String(),
+		instanceKey: instanceKey,
+		motive:      motive,
 	}
 }
 
@@ -39,25 +38,26 @@ func (a Abort) ID() string {
 	return a.id
 }
 
-// Instance returns the instance of the Event
-func (a Abort) Instance() bspl.Instance {
-	return a.instance
+// InstanceKey returns the key of the instance of the Event
+func (a Abort) InstanceKey() string {
+	return a.instanceKey
 }
 
 // Marshal a Abort event to bytes
 func (a Abort) Marshal() ([]byte, error) {
-	b, err := a.instance.Marshal()
-	if err != nil {
-		return nil, err
-	}
-	instance := base64.StdEncoding.EncodeToString(b)
+	motive := base64.StdEncoding.EncodeToString([]byte(a.motive))
 	wrapper := EventWrapper{
-		Argument: a.motive,
-		ID:       a.ID(),
-		Instance: instance,
-		Type:     TypeAbort,
+		Argument:    string(motive),
+		ID:          a.ID(),
+		InstanceKey: a.instanceKey,
+		Type:        TypeAbort,
 	}
 	return wrapper.Marshal()
+}
+
+// Motive for aborting the protocol
+func (a Abort) Motive() string {
+	return a.motive
 }
 
 // Unmarshal a Abort from bytes
@@ -67,19 +67,14 @@ func (a Abort) Unmarshal(data []byte) (Abort, error) {
 	if err := json.Unmarshal(data, wrapper); err != nil {
 		return NIL, err
 	}
-	b, err := base64.StdEncoding.DecodeString(wrapper.Instance)
-	if err != nil {
-		return NIL, err
-	}
-	var instance bspl.Instance
-	instance, err = instance.Unmarshal(b)
+	motive, err := base64.RawStdEncoding.DecodeString(wrapper.Argument)
 	if err != nil {
 		return NIL, err
 	}
 	n := Abort{
-		id:       wrapper.ID,
-		instance: instance,
-		motive:   wrapper.Argument,
+		id:          wrapper.ID,
+		instanceKey: wrapper.InstanceKey,
+		motive:      string(motive),
 	}
 	return n, nil
 }

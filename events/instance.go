@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mikelsr/bspl"
+	imp "github.com/mikelsr/bspl/implementation"
 )
 
 // NewInstance happens when an Instance is created
@@ -24,7 +25,7 @@ func MakeNewInstance(instance bspl.Instance) NewInstance {
 
 // Argument of NewInstance: nil.
 func (ni NewInstance) Argument() interface{} {
-	return nil
+	return ni.instance
 }
 
 // Type returns the event type
@@ -37,9 +38,14 @@ func (ni NewInstance) ID() string {
 	return ni.id
 }
 
-// Instance returns the instance of the Event
+// Instance returns the created instance
 func (ni NewInstance) Instance() bspl.Instance {
 	return ni.instance
+}
+
+// InstanceKey returns the key of the instance of the Event
+func (ni NewInstance) InstanceKey() string {
+	return ni.instance.Key()
 }
 
 // Marshal a NewInstance event to bytes
@@ -50,10 +56,10 @@ func (ni NewInstance) Marshal() ([]byte, error) {
 	}
 	instance := base64.StdEncoding.EncodeToString(b)
 	wrapper := EventWrapper{
-		Argument: "",
-		ID:       ni.ID(),
-		Instance: instance,
-		Type:     TypeNewInstance,
+		Argument:    instance,
+		ID:          ni.ID(),
+		InstanceKey: ni.instance.Key(),
+		Type:        TypeNewInstance,
 	}
 	return wrapper.Marshal()
 }
@@ -65,15 +71,16 @@ func (ni NewInstance) Unmarshal(data []byte) (NewInstance, error) {
 	if err := json.Unmarshal(data, wrapper); err != nil {
 		return NIL, err
 	}
-	b, err := base64.StdEncoding.DecodeString(wrapper.Instance)
+	b, err := base64.StdEncoding.DecodeString(wrapper.Argument)
 	if err != nil {
 		return NIL, err
 	}
-	var instance bspl.Instance
-	instance, err = instance.Unmarshal(b)
+	var instance imp.Instance
+	dump, err := instance.Unmarshal(b)
 	if err != nil {
 		return NIL, err
 	}
+	instance = dump.(imp.Instance)
 	n := NewInstance{
 		id:       wrapper.ID,
 		instance: instance,

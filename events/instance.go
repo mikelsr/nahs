@@ -65,7 +65,7 @@ func (ni NewInstance) Marshal() ([]byte, error) {
 }
 
 // Unmarshal a NewInstance from bytes
-func (ni NewInstance) Unmarshal(data []byte) (NewInstance, error) {
+func (ni NewInstance) Unmarshal(data []byte) (Event, error) {
 	NIL := NewInstance{}
 	wrapper := new(EventWrapper)
 	if err := json.Unmarshal(data, wrapper); err != nil {

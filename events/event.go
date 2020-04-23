@@ -33,9 +33,9 @@ type Event interface {
 	// Type of Event
 	Type() EventType
 	// Marshal an Event to bytes
-	Marshal() []byte
+	Marshal() ([]byte, error)
 	// Unmarshal an Event from bytes
-	UnMarshal([]byte) (Event, error)
+	Unmarshal([]byte) (Event, error)
 }
 
 // EventWrapper is used by different event types
@@ -71,34 +71,70 @@ func Type(data []byte) (EventType, error) {
 	return ge.Type, nil
 }
 
+// GetInstanceKey extracts the instance key from a marshalled
+// event
+func GetInstanceKey(marshalledEvent []byte) (string, error) {
+	t, err := Type(marshalledEvent)
+	if err != nil {
+		return "", err
+	}
+	var event Event
+	switch t {
+	case TypeAbort:
+		var a Abort
+		event, err = a.Unmarshal(marshalledEvent)
+		if err != nil {
+			return "", err
+		}
+	case TypeNewInstance:
+		var ni NewInstance
+		event, err = ni.Unmarshal(marshalledEvent)
+		if err != nil {
+			return "", err
+		}
+	case TypeNewMessage:
+		var nm NewMessage
+		event, err = nm.Unmarshal(marshalledEvent)
+		if err != nil {
+			return "", err
+		}
+	default:
+		return "", errors.New("Key not found")
+	}
+	return event.InstanceKey(), nil
+}
+
 // RunEvent identifies an event and calls the corresponding
 // Reasoner method
-func RunEvent(r bspl.Reasoner, data []byte) error {
-	t, err := Type(data)
+func RunEvent(r bspl.Reasoner, marshalledEvent []byte) error {
+	t, err := Type(marshalledEvent)
 	if err != nil {
 		return err
 	}
 	switch t {
 	case TypeAbort:
 		var a Abort
-		a, err = a.Unmarshal(data)
+		event, err := a.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
+		a = event.(Abort)
 		return r.Abort(a.InstanceKey(), a.Motive())
 	case TypeNewInstance:
 		var ni NewInstance
-		ni, err = ni.Unmarshal(data)
+		event, err := ni.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
+		ni = event.(NewInstance)
 		return r.RegisterInstance(ni.Instance())
 	case TypeNewMessage:
 		var nm NewMessage
-		nm, err = nm.Unmarshal(data)
+		event, err := nm.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
+		nm = event.(NewMessage)
 		return r.RegisterMessage(nm.InstanceKey(), nm.Message())
 	}
 	return nil

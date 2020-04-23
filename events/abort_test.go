@@ -29,7 +29,8 @@ func testAbortUnmarshal(t *testing.T) {
 	motive := "the need to test this"
 	expected := MakeAbort(i.Key(), motive)
 	b, _ := expected.Marshal()
-	a, err := expected.Unmarshal(b)
+	event, err := expected.Unmarshal(b)
+	a := event.(Abort)
 	if err != nil {
 		t.FailNow()
 	}

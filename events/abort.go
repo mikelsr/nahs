@@ -61,7 +61,7 @@ func (a Abort) Motive() string {
 }
 
 // Unmarshal a Abort from bytes
-func (a Abort) Unmarshal(data []byte) (Abort, error) {
+func (a Abort) Unmarshal(data []byte) (Event, error) {
 	NIL := Abort{}
 	wrapper := new(EventWrapper)
 	if err := json.Unmarshal(data, wrapper); err != nil {

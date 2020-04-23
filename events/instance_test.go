@@ -27,17 +27,18 @@ func testNewInstanceMarshal(t *testing.T) {
 func testNewInstanceUnmarshal(t *testing.T) {
 	expected := MakeNewInstance(testInstance())
 	b, _ := expected.Marshal()
-	ni, err := expected.Unmarshal(b)
+	event, err := expected.Unmarshal(b)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
-	switch ni.Argument().(type) {
+	switch event.Argument().(type) {
 	case bspl.Instance:
 		break
 	default:
 		t.FailNow()
 	}
+	ni := event.(NewInstance)
 	if ni.ID() != expected.ID() ||
 		!ni.Instance().Equals(expected.instance) ||
 		ni.Type() != expected.Type() ||

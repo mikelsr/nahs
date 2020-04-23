@@ -42,7 +42,8 @@ func testNewMessageUnmarshal(t *testing.T) {
 	}
 	expected := MakeNewMessage(i.Key(), m)
 	b, _ := expected.Marshal()
-	nm, err := expected.Unmarshal(b)
+	event, err := expected.Unmarshal(b)
+	nm := event.(NewMessage)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()

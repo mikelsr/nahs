@@ -61,3 +61,32 @@ func TestRunEvent(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestGetInstanceKey(t *testing.T) {
+	i := testInstance()
+	motive := "general test"
+	var m bspl.Message
+	for _, v := range i.Messages() {
+		if v.Action().Name == "Offer" {
+			m = v
+			break
+		}
+	}
+	aEvent, _ := MakeAbort(i.Key(), motive).Marshal()
+	niEvent, _ := MakeNewInstance(i).Marshal()
+	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
+
+	for _, event := range [][]byte{aEvent, niEvent, nmEvent} {
+		key, err := GetInstanceKey(event)
+		if err != nil {
+			t.Log(err)
+			t.FailNow()
+		}
+		if key != i.Key() {
+			t.FailNow()
+		}
+	}
+	if _, err := GetInstanceKey([]byte{}); err == nil {
+		t.FailNow()
+	}
+}

@@ -67,7 +67,7 @@ func (nm NewMessage) Message() bspl.Message {
 }
 
 // Unmarshal a NewMessage from bytes
-func (nm NewMessage) Unmarshal(data []byte) (NewMessage, error) {
+func (nm NewMessage) Unmarshal(data []byte) (Event, error) {
 	NIL := NewMessage{}
 	wrapper := new(EventWrapper)
 	if err := json.Unmarshal(data, wrapper); err != nil {

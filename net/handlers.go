@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
@@ -56,6 +57,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	}
 	bProtos := bytes.Split(b, []byte{exchangeSeparator})
 	protocols := make([]bspl.Protocol, len(bProtos))
+	roles := make([][]bspl.Role, len(bProtos))
 
 	// if  the protocol list was empty, return
 	if len(bProtos) == 1 && len(bProtos[0]) == 1 && bytes.Equal(bProtos[0], []byte{exchangeEnd}) {
@@ -64,12 +66,12 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	}
 	// parse protocols
 	for i, bp := range bProtos {
-		reader := bytes.NewReader(bp)
-		protocol, err := bspl.Parse(reader)
+		protocol, roleList, err := unwrapProtocol(bp[:len(bp)-1])
 		if err != nil {
-			logger.Warn(err)
+			panic(err)
 		}
 		protocols[i] = protocol
+		roles[i] = roleList
 	}
 	var sb strings.Builder
 	sb.WriteString("Discovered protocols: \n")
@@ -84,7 +86,12 @@ func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	defer wg.Done()
 	k := len(n.protocols)
 	for i, p := range n.protocols {
-		rw.WriteString(p.String())
+		roles := n.roles[p.Key()]
+		if len(roles) == 0 {
+			panic(fmt.Errorf("No defined roles for protocol '%s'", p.Key()))
+		}
+		payload := wrapProtocol(p, roles...)
+		rw.Write(payload)
 		if i != k-1 {
 			rw.WriteByte(exchangeSeparator)
 		}
@@ -187,7 +194,7 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 		return ErrHandleEvent{ID: id, Reason: "Could not extract instance key"}
 	}
 	// check if the instance has a peer assigned
-	s, found := n.openInstances[instanceKey]
+	s, found := n.OpenInstances[instanceKey]
 	logger.Infof("Run event '%s' for node '%s'", t, sender)
 	switch t {
 	case events.TypeAbort, events.TypeNewMessage:
@@ -206,7 +213,7 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 		}
 
 		// asign sender to instance
-		n.openInstances[instanceKey] = sender
+		n.OpenInstances[instanceKey] = sender
 	}
 	// run event
 	return events.RunEvent(n.reasoner, b)

@@ -24,16 +24,19 @@ type Node struct {
 	cancel context.CancelFunc
 	// dht table with information about network peers
 	dht *dht.IpfsDHT
-	// openInstances maps instance keys to peer.IDs to
+	// OpenInstances maps instance keys to peer.IDs to
 	// verify that the node sending the event is the one
 	// who created it
-	openInstances map[string]peer.ID
+	OpenInstances map[string]peer.ID
 	// routing // TODO: rendezvous point?
 	routing *discovery.RoutingDiscovery
-	// services this node offers
+	// protocols this node offers
 	protocols []bspl.Protocol
 	// resoner to handle BSPL logic
 	reasoner bspl.Reasoner
+	// roles this node plays for each protocol mapped to
+	// protocol keys
+	roles map[string][]bspl.Role
 }
 
 // NewNode is the default constructor for Node.
@@ -46,7 +49,8 @@ func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
 
-	n.openInstances = make(map[string]peer.ID)
+	n.OpenInstances = make(map[string]peer.ID)
+	n.roles = make(map[string][]bspl.Role)
 
 	n.context, n.cancel = context.WithCancel(context.Background())
 	// Contatenate options parameter to default options
@@ -95,4 +99,28 @@ func (n Node) ID() peer.ID {
 // Addrs returns the multiaddr of the libp2p host of the Node
 func (n Node) Addrs() []multiaddr.Multiaddr {
 	return n.host.Addrs()
+}
+
+// AddProtocol adds a protocol to the node and establishes what roles
+// the node plays in that protocol. If the protocol was already added,
+// the roles that weren't already established are added.
+func (n *Node) AddProtocol(p bspl.Protocol, roles ...bspl.Role) {
+	playedRoles, found := n.roles[p.Key()]
+	if !found {
+		n.protocols = append(n.protocols, p)
+		n.roles[p.Key()] = roles
+		return
+	}
+	for _, role := range roles {
+		found := false
+		for _, playedRole := range playedRoles {
+			if playedRole == role {
+				found = true
+				break
+			}
+		}
+		if !found {
+			n.roles[p.Key()] = append(n.roles[p.Key()], role)
+		}
+	}
 }

@@ -16,8 +16,8 @@ func TestDiscoveryHandler(t *testing.T) {
 	n1, n2 := n[0], n[1]
 
 	// Add protocols to the nodes so they can advertise them
-	n1.protocols = []bspl.Protocol{tp1}
-	n2.protocols = []bspl.Protocol{tp2}
+	n1.AddProtocol(tp1, tp1.Roles...)
+	n2.AddProtocol(tp2, tp2.Roles...)
 
 	// Create stream to exchange BSPL protocols
 	stream, err := n1.host.NewStream(n1.context, n2.ID(), protocolDiscoveryID)
@@ -106,7 +106,7 @@ func testEventHandlerAbort(t *testing.T) {
 	// create event
 	instance := testInstance()
 
-	n2.openInstances[instance.Key()] = n1.ID()
+	n2.OpenInstances[instance.Key()] = n1.ID()
 
 	a := events.MakeAbort(instance.Key(), "_")
 	data, err := a.Marshal()
@@ -178,7 +178,7 @@ func testEventHandlerNewMessage(t *testing.T) {
 	// create event
 	instance := testInstance()
 
-	n2.openInstances[instance.Key()] = n1.ID()
+	n2.OpenInstances[instance.Key()] = n1.ID()
 
 	var message bspl.Message
 	for _, v := range instance.Messages() {

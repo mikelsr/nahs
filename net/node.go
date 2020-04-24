@@ -68,6 +68,7 @@ func newNode(options ...libp2p.Option) *Node {
 
 	n.Contacts = make(Contacts)
 	n.OpenInstances = make(map[string]peer.ID)
+	n.protocols = make([]bspl.Protocol, 0)
 	n.roles = make(map[string][]bspl.Role)
 
 	n.context, n.cancel = context.WithCancel(context.Background())

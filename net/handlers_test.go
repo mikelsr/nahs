@@ -93,12 +93,12 @@ func testEcho(n1, n2 *Node, msg []byte) error {
 }
 
 func TestEventHandler(t *testing.T) {
-	testEventHandlerAbort(t)
+	testEventHandlerDropInstance(t)
 	testEventHandlerNewInstance(t)
 	testEventHandlerNewMessage(t)
 }
 
-func testEventHandlerAbort(t *testing.T) {
+func testEventHandlerDropInstance(t *testing.T) {
 	m := mockReasoner{}
 	n := testNodes(3)
 	for _, node := range n {
@@ -111,7 +111,7 @@ func testEventHandlerAbort(t *testing.T) {
 
 	n2.OpenInstances[instance.Key()] = n1.ID()
 
-	a := events.MakeAbort(instance.Key(), "_")
+	a := events.MakeDropInstance(instance.Key(), "_")
 	// send data from unauthorized node
 	ok, err := n3.SendEvent(n2.ID(), a)
 	if err != nil {

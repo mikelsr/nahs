@@ -47,11 +47,14 @@ type Node struct {
 func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 	n := newNode(options...)
 	n.reasoner = reasoner
+	// Connect the node to the bootstrap nodes to discover other peers
+	n.configDiscovery()
 	return n
 }
 
 // newNode is a constructor that requires no bspl.Reasoner
-// used only inside this package.
+// and doesn't connect to the boostrap nodes used only inside
+// this package.
 func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
 
@@ -91,9 +94,13 @@ func newNode(options ...libp2p.Option) *Node {
 func NodeFromPrivKey(reasoner bspl.Reasoner, sk crypto.PrivKey, options ...libp2p.Option) *Node {
 	n := nodeFromPrivKey(sk, options...)
 	n.reasoner = reasoner
+	n.configDiscovery()
 	return n
 }
 
+// nodeFromPrivKey is the same as NodeFromPrivKey but requires
+// no bspl.Reasoner and doesn't connect to the boostrap nodes
+// used only inside this package.
 func nodeFromPrivKey(sk crypto.PrivKey, options ...libp2p.Option) *Node {
 	return newNode(append(options, libp2p.Identity(sk))...)
 }

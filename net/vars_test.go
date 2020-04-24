@@ -149,7 +149,7 @@ func (m mockReasoner) Instances(p bspl.Protocol) []bspl.Instance {
 	return nil
 }
 
-func (m mockReasoner) Instantiate(p bspl.Protocol, ins bspl.Values) (bspl.Instance, error) {
+func (m mockReasoner) Instantiate(p bspl.Protocol, roles bspl.Roles, ins bspl.Values) (bspl.Instance, error) {
 	return nil, errMock
 }
 

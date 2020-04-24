@@ -52,6 +52,14 @@ func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 	return n
 }
 
+// LocalNode returns a new node without settings up the discovery protocols.
+// This is useful for testing without connection or wasting time.
+func LocalNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
+	n := newNode(options...)
+	n.reasoner = reasoner
+	return n
+}
+
 // newNode is a constructor that requires no bspl.Reasoner
 // and doesn't connect to the  bootstrap nodes used only inside
 // this package.

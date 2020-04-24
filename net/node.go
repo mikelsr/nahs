@@ -53,7 +53,7 @@ func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 }
 
 // newNode is a constructor that requires no bspl.Reasoner
-// and doesn't connect to the boostrap nodes used only inside
+// and doesn't connect to the  bootstrap nodes used only inside
 // this package.
 func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
@@ -99,7 +99,7 @@ func NodeFromPrivKey(reasoner bspl.Reasoner, sk crypto.PrivKey, options ...libp2
 }
 
 // nodeFromPrivKey is the same as NodeFromPrivKey but requires
-// no bspl.Reasoner and doesn't connect to the boostrap nodes
+// no bspl.Reasoner and doesn't connect to the  bootstrap nodes
 // used only inside this package.
 func nodeFromPrivKey(sk crypto.PrivKey, options ...libp2p.Option) *Node {
 	return newNode(append(options, libp2p.Identity(sk))...)

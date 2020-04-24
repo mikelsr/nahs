@@ -23,4 +23,13 @@ Network of Autonomous and Heterogeneous Services (NaHS)
 * `storage`: This module is not developed yet but will be used by Nodes to store information about themselves
 and other nodes so they can be brought up/down without losing information.
 
+## Other folders
+
+* `config`: Contains the private key of the main network (which is public, private only limits interaction
+to NaHS nodes).
+
+* `scripts`: Contains a script to generate a private network key.
+
+* `test`: Test resources.
+
 [logo]: .res/img/nahs.png "NaHS logo"

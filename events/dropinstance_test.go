@@ -4,36 +4,37 @@ import (
 	"testing"
 )
 
-func TestAbort(t *testing.T) {
-	testAbortMarshal(t)
-	testAbortUnmarshal(t)
+func TestDropInstance(t *testing.T) {
+	testDropInstanceMarshal(t)
+	testDropInstanceUnmarshal(t)
 }
 
-func testAbortMarshal(t *testing.T) {
+func testDropInstanceMarshal(t *testing.T) {
 	i := testInstance()
 	motive := "the need to test this"
-	a := MakeAbort(i.Key(), motive)
+	a := MakeDropInstance(i.Key(), motive)
 	b, err := a.Marshal()
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
 	}
-	expectedLen := 141
+	expectedLen := 148
 	if len(b) != expectedLen {
 		t.FailNow()
 	}
 }
 
-func testAbortUnmarshal(t *testing.T) {
+func testDropInstanceUnmarshal(t *testing.T) {
 	i := testInstance()
 	motive := "the need to test this thing_"
-	expected := MakeAbort(i.Key(), motive)
+	expected := MakeDropInstance(i.Key(), motive)
 	b, _ := expected.Marshal()
 	event, err := expected.Unmarshal(b)
-	a := event.(Abort)
 	if err != nil {
+		t.Log(err)
 		t.FailNow()
 	}
+	a := event.(DropInstance)
 	switch a.Argument().(type) {
 	case string:
 		break

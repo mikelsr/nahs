@@ -16,7 +16,7 @@ func TestType(t *testing.T) {
 			break
 		}
 	}
-	aEvent, _ := MakeAbort(i.Key(), motive).Marshal()
+	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
 	niEvent, _ := MakeNewInstance(i).Marshal()
 	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
 
@@ -30,7 +30,7 @@ func TestType(t *testing.T) {
 		}
 		types[j] = x
 	}
-	if types[0] != TypeAbort || types[1] != TypeNewInstance || types[2] != TypeNewMessage {
+	if types[0] != TypeDropInstance || types[1] != TypeNewInstance || types[2] != TypeNewMessage {
 		t.FailNow()
 	}
 }
@@ -45,7 +45,7 @@ func TestRunEvent(t *testing.T) {
 			break
 		}
 	}
-	aEvent, _ := MakeAbort(i.Key(), motive).Marshal()
+	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
 	niEvent, _ := MakeNewInstance(i).Marshal()
 	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
 
@@ -72,7 +72,7 @@ func TestGetInstanceKey(t *testing.T) {
 			break
 		}
 	}
-	aEvent, _ := MakeAbort(i.Key(), motive).Marshal()
+	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
 	niEvent, _ := MakeNewInstance(i).Marshal()
 	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
 

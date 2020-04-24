@@ -65,7 +65,7 @@ var (
 
 type mockReasoner struct{}
 
-func (m mockReasoner) Abort(instanceKey string, motive string) error {
+func (m mockReasoner) DropInstance(instanceKey string, motive string) error {
 	if instanceKey == testInstance().Key() {
 		return nil
 	}

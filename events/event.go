@@ -11,9 +11,9 @@ import (
 type EventType string
 
 const (
-	// TypeAbort an instance was cancelled by one of the
+	// TypeDropInstance an instance was cancelled by one of the
 	// parties involved
-	TypeAbort EventType = "abort"
+	TypeDropInstance EventType = "dropInstance"
 	// TypeNewInstance a new Instance was created
 	TypeNewInstance EventType = "new_instance"
 	// TypeNewMessage a new message was created
@@ -64,7 +64,7 @@ func ID(marshalledEvent []byte) (string, error) {
 		return "", err
 	}
 	switch ge.Type {
-	case TypeAbort, TypeNewInstance, TypeNewMessage:
+	case TypeDropInstance, TypeNewInstance, TypeNewMessage:
 		break
 	default:
 		return "", errors.New("Unable to identify event type")
@@ -79,7 +79,7 @@ func Type(marshalledEvent []byte) (EventType, error) {
 		return "", err
 	}
 	switch ge.Type {
-	case TypeAbort, TypeNewInstance, TypeNewMessage:
+	case TypeDropInstance, TypeNewInstance, TypeNewMessage:
 		break
 	default:
 		return "", errors.New("Unable to identify event type")
@@ -96,8 +96,8 @@ func GetInstanceKey(marshalledEvent []byte) (string, error) {
 	}
 	var event Event
 	switch t {
-	case TypeAbort:
-		var a Abort
+	case TypeDropInstance:
+		var a DropInstance
 		event, err = a.Unmarshal(marshalledEvent)
 		if err != nil {
 			return "", err
@@ -128,14 +128,14 @@ func RunEvent(r bspl.Reasoner, marshalledEvent []byte) error {
 		return err
 	}
 	switch t {
-	case TypeAbort:
-		var a Abort
+	case TypeDropInstance:
+		var a DropInstance
 		event, err := a.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
-		a = event.(Abort)
-		return r.Abort(a.InstanceKey(), a.Motive())
+		a = event.(DropInstance)
+		return r.DropInstance(a.InstanceKey(), a.Motive())
 	case TypeNewInstance:
 		var ni NewInstance
 		event, err := ni.Unmarshal(marshalledEvent)

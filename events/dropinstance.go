@@ -7,62 +7,62 @@ import (
 	"github.com/google/uuid"
 )
 
-// Abort happens when a party cancels an Instance
-type Abort struct {
+// DropInstance happens when a party cancels an Instance
+type DropInstance struct {
 	id          string
 	instanceKey string
 	motive      string
 }
 
-// MakeAbort is the default constructor for Abort
-func MakeAbort(instanceKey string, motive string) Abort {
-	return Abort{
+// MakeDropInstance is the default constructor for DropInstance
+func MakeDropInstance(instanceKey string, motive string) DropInstance {
+	return DropInstance{
 		id:          uuid.New().String(),
 		instanceKey: instanceKey,
 		motive:      motive,
 	}
 }
 
-// Argument of Abort: nil.
-func (a Abort) Argument() interface{} {
+// Argument of DropInstance: nil.
+func (a DropInstance) Argument() interface{} {
 	return a.motive
 }
 
 // Type returns the event type
-func (a Abort) Type() EventType {
-	return TypeAbort
+func (a DropInstance) Type() EventType {
+	return TypeDropInstance
 }
 
 // ID of the event
-func (a Abort) ID() string {
+func (a DropInstance) ID() string {
 	return a.id
 }
 
 // InstanceKey returns the key of the instance of the Event
-func (a Abort) InstanceKey() string {
+func (a DropInstance) InstanceKey() string {
 	return a.instanceKey
 }
 
-// Marshal a Abort event to bytes
-func (a Abort) Marshal() ([]byte, error) {
+// Marshal a DropInstance event to bytes
+func (a DropInstance) Marshal() ([]byte, error) {
 	motive := base64.StdEncoding.EncodeToString([]byte(a.motive))
 	wrapper := EventWrapper{
 		Argument:    string(motive),
 		ID:          a.ID(),
 		InstanceKey: a.instanceKey,
-		Type:        TypeAbort,
+		Type:        TypeDropInstance,
 	}
 	return wrapper.Marshal()
 }
 
-// Motive for aborting the protocol
-func (a Abort) Motive() string {
+// Motive for dropInstanceing the protocol
+func (a DropInstance) Motive() string {
 	return a.motive
 }
 
-// Unmarshal a Abort from bytes
-func (a Abort) Unmarshal(data []byte) (Event, error) {
-	NIL := Abort{}
+// Unmarshal a DropInstance from bytes
+func (a DropInstance) Unmarshal(data []byte) (Event, error) {
+	NIL := DropInstance{}
 	wrapper := new(EventWrapper)
 	if err := json.Unmarshal(data, wrapper); err != nil {
 		return NIL, err
@@ -71,7 +71,7 @@ func (a Abort) Unmarshal(data []byte) (Event, error) {
 	if err != nil {
 		return NIL, err
 	}
-	n := Abort{
+	n := DropInstance{
 		id:          wrapper.ID,
 		instanceKey: wrapper.InstanceKey,
 		motive:      string(motive),

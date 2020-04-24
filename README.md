@@ -22,7 +22,7 @@ Network of Autonomous and Heterogeneous Services (NaHS)
 either manually or with the libp2p implementation of rendezvous (preferred method) using the default nodes.
 Private network logic is implemented but not active for now.
 
-* `store`: This module is not developed yet but will be used by Nodes to store information about themselves
+* `storage`: This module is not developed yet but will be used by Nodes to store information about themselves
 and other nodes so they can be brought up/down without losing information.
 
 [logo]: .res/img/nahs.png "NaHS logo"

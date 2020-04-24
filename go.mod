@@ -17,11 +17,13 @@ require (
 	github.com/libp2p/go-libp2p-peerstore v0.2.3
 	github.com/libp2p/go-stream-muxer-multistream v0.3.0 // indirect
 	github.com/libp2p/go-ws-transport v0.3.1 // indirect
-	github.com/mikelsr/bspl v0.0.0-20200423160134-d747182e735d
+	github.com/libp2p/go-yamux v1.3.6 // indirect
+	github.com/mikelsr/bspl v0.0.0-20200424161522-b030926260f4
 	github.com/multiformats/go-multiaddr v0.2.1
 	github.com/multiformats/go-multibase v0.0.2 // indirect
 	github.com/syndtr/goleveldb v1.0.0
-	golang.org/x/crypto v0.0.0-20200422194213-44a606286825 // indirect
+	go.uber.org/zap v1.15.0 // indirect
+	golang.org/x/crypto v0.0.0-20200423211502-4bdfaf469ed5 // indirect
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 )

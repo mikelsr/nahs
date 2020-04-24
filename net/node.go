@@ -1,9 +1,11 @@
 package net
 
 import (
+	"bufio"
 	"context"
 
 	"github.com/mikelsr/bspl"
+	"github.com/mikelsr/nahs/events"
 	"github.com/multiformats/go-multiaddr"
 
 	"github.com/libp2p/go-libp2p"
@@ -126,4 +128,23 @@ func (n *Node) AddProtocol(p bspl.Protocol, roles ...bspl.Role) {
 			n.roles[p.Key()] = append(n.roles[p.Key()], role)
 		}
 	}
+}
+
+// SendEvent sends an events.Event to the target node
+func (n *Node) SendEvent(target peer.ID, event events.Event) (bool, error) {
+	data, err := event.Marshal()
+	if err != nil {
+		return false, err
+	}
+	stream, err := n.host.NewStream(n.context, target, protocolEventID)
+	if err != nil {
+		return false, err
+	}
+	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	rw.Write(data)
+	rw.WriteByte(exchangeEnd)
+	if err := rw.Flush(); err != nil {
+		return false, err
+	}
+	return readEventResponse(rw)
 }

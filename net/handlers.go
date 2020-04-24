@@ -10,14 +10,24 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
+	peerstore "github.com/libp2p/go-libp2p-peerstore"
 	"github.com/mikelsr/nahs/events"
+	"github.com/multiformats/go-multiaddr"
 )
 
 // setStreamHandler sets the stream handlers of the node peer
 func (n *Node) setStreamHandlers() {
 	n.host.SetStreamHandler(protocolDiscoveryID, n.discoveryHandler)
-	n.host.SetStreamHandler(protocolEchoID, echoHandler)
+	n.host.SetStreamHandler(protocolEchoID, n.echoHandler)
 	n.host.SetStreamHandler(protocolEventID, n.eventHandler)
+}
+
+func (n *Node) addRemotePeer(stream network.Stream) {
+	// store new peer and multiaddr
+	remotePeer := stream.Conn().RemotePeer()
+	remoteAddrs := []multiaddr.Multiaddr{stream.Conn().RemoteMultiaddr()}
+	logger.Infof("Added address '%s' for peer '%s'", remoteAddrs[0], remotePeer.Pretty())
+	n.host.Peerstore().AddAddrs(remotePeer, remoteAddrs, peerstore.PermanentAddrTTL)
 }
 
 // discoveryHandler exchanges the BSPL protocols of the
@@ -28,11 +38,12 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Errorf("Recovered from error in protocol exchange: %s", r)
-			stream.Close()
 		}
+		stream.Close()
 	}()
 
 	logger.Info("Opened new BSPL protocol discovery stream")
+	n.addRemotePeer(stream)
 
 	var wg sync.WaitGroup
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -41,7 +52,6 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 	go n.discoveryReadData(rw, &wg, stream.Conn().RemotePeer())
 	go n.discoveryWriteData(rw, &wg)
 	wg.Wait()
-	stream.Close()
 }
 
 // discoveryReadData parses the BSPL protocols transmitted by the other peer
@@ -107,16 +117,18 @@ func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 
 // echoHandler reads a message and writes the same as
 // a response
-func echoHandler(stream network.Stream) {
+func (n *Node) echoHandler(stream network.Stream) {
 	// defer recovery function in case the stream is closed
 	// unexpectedly
 	defer func() {
 		if r := recover(); r != nil {
 			logger.Infof("Recovered from error in protocol echo: %s", r)
-			stream.Close()
 		}
+		stream.Close()
+
 	}()
 	logger.Info("Opened new Echo stream")
+	n.addRemotePeer(stream)
 
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 	response := echoHandlerRead(rw)
@@ -156,6 +168,7 @@ func (n *Node) eventHandler(stream network.Stream) {
 		}
 	}()
 	logger.Info("Opened new Echo stream")
+	n.addRemotePeer(stream)
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 	err := n.runEvent(rw, stream.Conn().RemotePeer())
 	if err != nil {
@@ -169,7 +182,6 @@ func (n *Node) eventHandler(stream network.Stream) {
 		logger.Infof("Error while writing echo message: %s", err)
 		panic(err)
 	}
-	stream.Close()
 }
 
 func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {

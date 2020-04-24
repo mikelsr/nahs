@@ -24,7 +24,7 @@ func TestDiscoveryHandler(t *testing.T) {
 	if err != nil {
 		n1.cancel()
 		n2.cancel()
-		fmt.Println(err)
+		t.Log(err)
 		t.FailNow()
 	}
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -128,21 +128,17 @@ func testEventHandlerAbort(t *testing.T) {
 	n2.OpenInstances[instance.Key()] = n1.ID()
 
 	a := events.MakeAbort(instance.Key(), "_")
-	data, err := a.Marshal()
+	// send data from unauthorized node
+	ok, err := n3.SendEvent(n2.ID(), a)
 	if err != nil {
 		t.Log(err)
-		t.FailNow()
-	}
-	// send data from unauthorized node
-	ok, err := testSendEvent(n3, n2, data, t)
-	if err != nil {
 		t.FailNow()
 	}
 	if ok {
 		t.FailNow()
 	}
 	// send data from authorized node
-	ok, err = testSendEvent(n1, n2, data, t)
+	ok, err = n1.SendEvent(n2.ID(), a)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -163,14 +159,9 @@ func testEventHandlerNewInstance(t *testing.T) {
 	// create event
 	instance := testInstance()
 	ni := events.MakeNewInstance(instance)
-	data, err := ni.Marshal()
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
 
 	// create new instance
-	ok, err := testSendEvent(n1, n2, data, t)
+	ok, err := n1.SendEvent(n2.ID(), ni)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -179,7 +170,7 @@ func testEventHandlerNewInstance(t *testing.T) {
 		t.FailNow()
 	}
 	// create the same instance again
-	_, err = testSendEvent(n1, n2, data, t)
+	_, err = n1.SendEvent(n2.ID(), ni)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()

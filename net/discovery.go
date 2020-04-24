@@ -1,6 +1,7 @@
 package net
 
 import (
+	"bufio"
 	"sync"
 
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -67,6 +68,22 @@ func (n *Node) FindNodes() {
 		}
 		logger.Infof("Found peer: %s", peer.ID)
 		n.host.Peerstore().AddAddrs(peer.ID, peer.Addrs, peerstore.PermanentAddrTTL)
+
+		// Exchange known services with the node
+		stream, err := n.host.NewStream(n.context, peer.ID, protocolDiscoveryID)
+		if err != nil {
+			n.cancel()
+			panic(err)
+		}
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+		// Spawn routines to send the services offered by this node
+		// to the other node
+		// The wait group will be ignored
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go n.discoveryReadData(rw, &wg, peer.ID)
+		go n.discoveryWriteData(rw, &wg)
+		wg.Wait()
 	}
 	// block execution of this routine permantently
 	// select {}

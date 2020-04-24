@@ -139,6 +139,18 @@ func (n *Node) AddProtocol(p bspl.Protocol, roles ...bspl.Role) {
 	}
 }
 
+// ExportKey returns the marshaled private key of the Node
+func (n *Node) ExportKey() []byte {
+	prv := n.host.Network().Peerstore().PrivKey(n.host.ID())
+	b, _ := crypto.MarshalPrivateKey(prv)
+	return b
+}
+
+// Reasoner returns the reasoner of the Node
+func (n *Node) Reasoner() bspl.Reasoner {
+	return n.Reasoner()
+}
+
 // SendEvent sends an events.Event to the target node.
 // If the node is unreachable, the address is not known
 // or some error occurs the error is returned. If the
@@ -160,9 +172,4 @@ func (n *Node) SendEvent(target peer.ID, event events.Event) (bool, error) {
 		return false, err
 	}
 	return readEventResponse(rw)
-}
-
-// Reasoner returns the reasoner of the Node
-func (n *Node) Reasoner() bspl.Reasoner {
-	return n.Reasoner()
 }

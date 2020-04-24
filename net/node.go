@@ -50,6 +50,8 @@ func NewNode(reasoner bspl.Reasoner, options ...libp2p.Option) *Node {
 	return n
 }
 
+// newNode is a constructor that requires no bspl.Reasoner
+// used only inside this package.
 func newNode(options ...libp2p.Option) *Node {
 	n := new(Node)
 
@@ -130,7 +132,11 @@ func (n *Node) AddProtocol(p bspl.Protocol, roles ...bspl.Role) {
 	}
 }
 
-// SendEvent sends an events.Event to the target node
+// SendEvent sends an events.Event to the target node.
+// If the node is unreachable, the address is not known
+// or some error occurs the error is returned. If the
+// event was invalid, false is returned. If it was registered
+// correctly, true is returned.
 func (n *Node) SendEvent(target peer.ID, event events.Event) (bool, error) {
 	data, err := event.Marshal()
 	if err != nil {
@@ -147,4 +153,9 @@ func (n *Node) SendEvent(target peer.ID, event events.Event) (bool, error) {
 		return false, err
 	}
 	return readEventResponse(rw)
+}
+
+// Reasoner returns the reasoner of the Node
+func (n *Node) Reasoner() bspl.Reasoner {
+	return n.Reasoner()
 }

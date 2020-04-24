@@ -98,22 +98,6 @@ func TestEventHandler(t *testing.T) {
 	testEventHandlerNewMessage(t)
 }
 
-func testSendEvent(n1, n2 *Node, data []byte, t *testing.T) (bool, error) {
-	// Create event stream
-	stream, err := n1.host.NewStream(n1.context, n2.ID(), protocolEventID)
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
-	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-	rw.Write(data)
-	rw.WriteByte(exchangeEnd)
-	if err := rw.Flush(); err != nil {
-		t.FailNow()
-	}
-	return readEventResponse(rw)
-}
-
 func testEventHandlerAbort(t *testing.T) {
 	m := mockReasoner{}
 	n := testNodes(3)
@@ -197,13 +181,8 @@ func testEventHandlerNewMessage(t *testing.T) {
 	}
 
 	nm := events.MakeNewMessage(instance.Key(), message)
-	data, err := nm.Marshal()
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
 	// send message to correct instance
-	ok, err := testSendEvent(n1, n2, data, t)
+	ok, err := n1.SendEvent(n2.ID(), nm)
 	if err != nil {
 		t.FailNow()
 	}
@@ -212,12 +191,7 @@ func testEventHandlerNewMessage(t *testing.T) {
 	}
 	// send message to incorrect instance
 	nm = events.MakeNewMessage(instance.Key()+"_", message)
-	data, err = nm.Marshal()
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
-	ok, err = testSendEvent(n1, n2, data, t)
+	ok, err = n1.SendEvent(n2.ID(), nm)
 	if err != nil {
 		t.Log(err)
 		t.FailNow()

@@ -12,6 +12,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p-core/peerstore"
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 )
@@ -153,6 +154,11 @@ func (n *Node) ExportKey() []byte {
 	prv := n.host.Network().Peerstore().PrivKey(n.host.ID())
 	b, _ := crypto.MarshalPrivateKey(prv)
 	return b
+}
+
+// Peerstore returns the Peerstore of the Host of the Node
+func (n *Node) Peerstore() peerstore.Peerstore {
+	return n.host.Peerstore()
 }
 
 // Reasoner returns the reasoner of the Node

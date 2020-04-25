@@ -156,6 +156,30 @@ func (n *Node) ExportKey() []byte {
 	return b
 }
 
+// FindContact finds a contact that offers a service and plays a role
+// in that service. A slice of the peer.ID of those contacts is returned.
+func (n *Node) FindContact(protocolKey string, role bspl.Role) []peer.ID {
+	ids := make([]peer.ID, 0)
+	for contact, services := range n.Contacts {
+		service, found := services[protocolKey]
+		if !found {
+			continue
+		}
+		matchesRole := false
+		for _, role := range service.Roles {
+			if role == role {
+				matchesRole = true
+				break
+			}
+		}
+		if matchesRole {
+			ids = append(ids, contact)
+			break
+		}
+	}
+	return ids
+}
+
 // Peerstore returns the Peerstore of the Host of the Node
 func (n *Node) Peerstore() peerstore.Peerstore {
 	return n.host.Peerstore()

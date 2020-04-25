@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/mikelsr/bspl"
+	imp "github.com/mikelsr/bspl/implementation"
+	"github.com/mikelsr/bspl/proto"
 	"github.com/mikelsr/nahs/events"
 )
 
@@ -93,12 +95,12 @@ func testEcho(n1, n2 *Node, msg []byte) error {
 }
 
 func TestEventHandler(t *testing.T) {
-	testEventHandlerDropInstance(t)
-	testEventHandlerNewInstance(t)
-	testEventHandlerNewMessage(t)
+	testEventHandlerDropEvent(t)
+	testEventHandlerNewEvent(t)
+	testEventHandlerUpdateEvent(t)
 }
 
-func testEventHandlerDropInstance(t *testing.T) {
+func testEventHandlerDropEvent(t *testing.T) {
 	m := mockReasoner{}
 	n := testNodes(3)
 	for _, node := range n {
@@ -111,7 +113,7 @@ func testEventHandlerDropInstance(t *testing.T) {
 
 	n2.OpenInstances[instance.Key()] = n1.ID()
 
-	a := events.MakeDropInstance(instance.Key(), "_")
+	a := events.MakeDropEvent(instance.Key(), "_")
 	// send data from unauthorized node
 	ok, err := n3.SendEvent(n2.ID(), a)
 	if err != nil {
@@ -132,7 +134,7 @@ func testEventHandlerDropInstance(t *testing.T) {
 	}
 }
 
-func testEventHandlerNewInstance(t *testing.T) {
+func testEventHandlerNewEvent(t *testing.T) {
 	m := mockReasoner{}
 	n := testNodes(2)
 	for _, node := range n {
@@ -142,7 +144,7 @@ func testEventHandlerNewInstance(t *testing.T) {
 
 	// create event
 	instance := testInstance()
-	ni := events.MakeNewInstance(instance)
+	ni := events.MakeNewEvent(instance)
 
 	// create new instance
 	ok, err := n1.SendEvent(n2.ID(), ni)
@@ -161,7 +163,7 @@ func testEventHandlerNewInstance(t *testing.T) {
 	}
 }
 
-func testEventHandlerNewMessage(t *testing.T) {
+func testEventHandlerUpdateEvent(t *testing.T) {
 	m := mockReasoner{}
 	n := testNodes(2)
 	for _, node := range n {
@@ -170,33 +172,31 @@ func testEventHandlerNewMessage(t *testing.T) {
 	n1, n2 := n[0], n[1]
 
 	// create event
-	instance := testInstance()
-
-	n2.OpenInstances[instance.Key()] = n1.ID()
-
-	var message bspl.Message
-	for _, v := range instance.Messages() {
-		message = v
-		break
+	p := testProtocol()
+	roles := bspl.Roles{
+		proto.Role("Buyer"):  "B",
+		proto.Role("Seller"): "S",
 	}
+	// i1 is the empty instance
+	i1 := imp.NewInstance(p, roles)
+	i1.SetValue("ID", "testID")
+	i1.SetValue("item", "testItem")
+	// i2 is the same as i1 but after running "Request"
+	i2 := imp.NewInstance(p, roles)
+	i2.SetValue("ID", "testID")
+	i2.SetValue("item", "testItem")
+	i2.SetValue("pritce", "testPrice")
 
-	nm := events.MakeNewMessage(instance.Key(), message)
+	n2.OpenInstances[i1.Key()] = n1.ID()
+
+	updateEvent := events.MakeUpdateEvent(i2)
+
 	// send message to correct instance
-	ok, err := n1.SendEvent(n2.ID(), nm)
+	ok, err := n1.SendEvent(n2.ID(), updateEvent)
 	if err != nil {
 		t.FailNow()
 	}
 	if !ok {
-		t.FailNow()
-	}
-	// send message to incorrect instance
-	nm = events.MakeNewMessage(instance.Key()+"_", message)
-	ok, err = n1.SendEvent(n2.ID(), nm)
-	if err != nil {
-		t.Log(err)
-		t.FailNow()
-	}
-	if ok {
 		t.FailNow()
 	}
 }

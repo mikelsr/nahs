@@ -210,8 +210,8 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 	s, found := n.OpenInstances[instanceKey]
 	logger.Debugf("Run event '%s' for node '%s'", t, sender)
 	switch t {
-	case events.TypeDropInstance, events.TypeNewMessage:
-		// dropInstance and newmessage require an existing instance
+	case events.TypeDropEvent, events.TypeUpdateEvent:
+		// drop and update require an existing instance
 		if !found {
 			return ErrHandleEvent{ID: id, Reason: "Instance not found"}
 		}
@@ -219,8 +219,8 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 		if s.String() != sender.String() {
 			return ErrHandleEvent{ID: id, Reason: "Unauthorized"}
 		}
-	case events.TypeNewInstance:
-		// newinstance requires the instance to no exist
+	case events.TypeNewEvent:
+		// new requires the instance to no exist
 		if found {
 			return ErrHandleEvent{ID: id, Reason: "Instance already existed"}
 		}

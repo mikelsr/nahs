@@ -335,10 +335,8 @@ github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyex
 github.com/miekg/dns v1.1.12/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.28 h1:gQhy5bsJa8zTlVI8lywCTZp1lguor+xevFoYlzeCTQY=
 github.com/miekg/dns v1.1.28/go.mod h1:KNUDUusw/aVsxyTYZM1oqvCicbwhgbNgztCETuNZ7xM=
-github.com/mikelsr/bspl v0.0.0-20200424161522-b030926260f4 h1:d+N27DA91RmpTzCE06Qp40sCsLonh4Fxy6uF541eU+M=
-github.com/mikelsr/bspl v0.0.0-20200424161522-b030926260f4/go.mod h1:W8PTk2N7z7OG9BDNuCApk9OaD4QIe0ctAZoDlBGEPsY=
-github.com/mikelsr/bspl v0.0.0-20200424190829-8861eb3dcffd h1:2na7dz4mCO3U7OLFBVdYrRlf+JDjYsuBaCiaVtHKA/o=
-github.com/mikelsr/bspl v0.0.0-20200424190829-8861eb3dcffd/go.mod h1:W8PTk2N7z7OG9BDNuCApk9OaD4QIe0ctAZoDlBGEPsY=
+github.com/mikelsr/bspl v0.0.0-20200425163007-bda5911e92ba h1:vtNLbYDcL3T+y4eX8dSu+idgjU2fWEzspcUS1P1i3Bk=
+github.com/mikelsr/bspl v0.0.0-20200425163007-bda5911e92ba/go.mod h1:W8PTk2N7z7OG9BDNuCApk9OaD4QIe0ctAZoDlBGEPsY=
 github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 h1:lYpkrQH5ajf0OXOcUbGjvZxxijuBwbbmlSxLiuofa+g=
 github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1/go.mod h1:pD8RvIylQ358TN4wwqatJ8rNavkEINozVn9DtGI3dfQ=
 github.com/minio/sha256-simd v0.0.0-20190131020904-2d45a736cd16/go.mod h1:2FMWW+8GMoPweT6+pI63m9YE3Lmw4J71hV56Chs1E/U=

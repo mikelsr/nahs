@@ -19,7 +19,7 @@ require (
 	github.com/libp2p/go-stream-muxer-multistream v0.3.0 // indirect
 	github.com/libp2p/go-ws-transport v0.3.1 // indirect
 	github.com/libp2p/go-yamux v1.3.6 // indirect
-	github.com/mikelsr/bspl v0.0.0-20200424190829-8861eb3dcffd
+	github.com/mikelsr/bspl v0.0.0-20200425163007-bda5911e92ba
 	github.com/multiformats/go-multiaddr v0.2.1
 	github.com/multiformats/go-multibase v0.0.2 // indirect
 	github.com/syndtr/goleveldb v1.0.0

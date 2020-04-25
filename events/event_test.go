@@ -2,23 +2,14 @@ package events
 
 import (
 	"testing"
-
-	"github.com/mikelsr/bspl"
 )
 
 func TestType(t *testing.T) {
 	i := testInstance()
 	motive := "general test"
-	var m bspl.Message
-	for _, v := range i.Messages() {
-		if v.Action().Name == "Offer" {
-			m = v
-			break
-		}
-	}
-	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
-	niEvent, _ := MakeNewInstance(i).Marshal()
-	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
+	aEvent, _ := MakeDropEvent(i.Key(), motive).Marshal()
+	niEvent, _ := MakeNewEvent(i).Marshal()
+	nmEvent, _ := MakeUpdateEvent(i).Marshal()
 
 	dumps := [][]byte{aEvent, niEvent, nmEvent}
 	types := make([]EventType, 3)
@@ -30,7 +21,7 @@ func TestType(t *testing.T) {
 		}
 		types[j] = x
 	}
-	if types[0] != TypeDropInstance || types[1] != TypeNewInstance || types[2] != TypeNewMessage {
+	if types[0] != TypeDropEvent || types[1] != TypeNewEvent || types[2] != TypeUpdateEvent {
 		t.FailNow()
 	}
 }
@@ -38,20 +29,13 @@ func TestType(t *testing.T) {
 func TestRunEvent(t *testing.T) {
 	i := testInstance()
 	motive := "general test"
-	var m bspl.Message
-	for _, v := range i.Messages() {
-		if v.Action().Name == "Offer" {
-			m = v
-			break
-		}
-	}
-	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
-	niEvent, _ := MakeNewInstance(i).Marshal()
-	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
+	dropEvent, _ := MakeDropEvent(i.Key(), motive).Marshal()
+	newEvent, _ := MakeNewEvent(i).Marshal()
+	updateEvent, _ := MakeUpdateEvent(i).Marshal()
 
 	r := mockReasoner{}
 
-	for _, event := range [][]byte{aEvent, niEvent, nmEvent} {
+	for _, event := range [][]byte{dropEvent, newEvent, updateEvent} {
 		if err := RunEvent(r, event); err != nil {
 			t.Log(err)
 			t.FailNow()
@@ -65,16 +49,9 @@ func TestRunEvent(t *testing.T) {
 func TestGetInstanceKey(t *testing.T) {
 	i := testInstance()
 	motive := "general test"
-	var m bspl.Message
-	for _, v := range i.Messages() {
-		if v.Action().Name == "Offer" {
-			m = v
-			break
-		}
-	}
-	aEvent, _ := MakeDropInstance(i.Key(), motive).Marshal()
-	niEvent, _ := MakeNewInstance(i).Marshal()
-	nmEvent, _ := MakeNewMessage(i.Key(), m).Marshal()
+	aEvent, _ := MakeDropEvent(i.Key(), motive).Marshal()
+	niEvent, _ := MakeNewEvent(i).Marshal()
+	nmEvent, _ := MakeUpdateEvent(i).Marshal()
 
 	for _, event := range [][]byte{aEvent, niEvent, nmEvent} {
 		key, err := GetInstanceKey(event)

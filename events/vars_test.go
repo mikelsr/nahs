@@ -34,28 +34,16 @@ func testProtocol() proto.Protocol {
 	return p
 }
 
-func testInstance() imp.Instance {
+func testInstance() *imp.Instance {
 	p := testProtocol()
 	roles := imp.Roles{
 		proto.Role("Buyer"):  "B",
 		proto.Role("Seller"): "S",
 	}
-	values := make(imp.Values)
-	for _, param := range p.Parameters() {
-		values[param.String()] = "X"
-	}
-	i := imp.NewInstance(p, roles, values)
-	messages := make(imp.Messages)
-	for _, a := range p.Actions {
-		actionValues := make(imp.Values)
-		for _, param := range a.Parameters() {
-			actionValues[param.String()] = "X"
-		}
-		messages[a.String()] = imp.NewMessage(i.Key(), a, actionValues)
-	}
-	for _, m := range messages {
-		i.AddMessage(m.(imp.Message))
-	}
+	i := imp.NewInstance(p, roles)
+	i.SetValue("ID", "X")
+	i.SetValue("item", "X")
+	i.SetValue("price", "X")
 	return i
 }
 
@@ -76,8 +64,9 @@ func (m mockReasoner) GetInstance(instanceKey string) (bspl.Instance, bool) {
 	if instanceKey == testInstance().Key() {
 		return testInstance(), true
 	}
-	return imp.Instance{}, false
+	return nil, false
 }
+
 func (m mockReasoner) Instances(p bspl.Protocol) []bspl.Instance {
 	return nil
 }
@@ -86,9 +75,6 @@ func (m mockReasoner) Instantiate(p bspl.Protocol, roles bspl.Roles, ins bspl.Va
 	return nil, errMock
 }
 
-func (m mockReasoner) NewMessage(i bspl.Instance, a proto.Action) (bspl.Message, error) {
-	return nil, errMock
-}
 func (m mockReasoner) RegisterInstance(i bspl.Instance) error {
 	if i.Key() == testInstance().Key() {
 		return nil
@@ -96,9 +82,6 @@ func (m mockReasoner) RegisterInstance(i bspl.Instance) error {
 	return errMock
 }
 
-func (m mockReasoner) RegisterMessage(instanceKey string, msg bspl.Message) error {
-	if instanceKey == msg.InstanceKey() {
-		return nil
-	}
-	return errMock
+func (m mockReasoner) UpdateInstance(newVersion bspl.Instance) error {
+	return nil
 }

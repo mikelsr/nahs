@@ -11,20 +11,21 @@ import (
 type EventType string
 
 const (
-	// TypeDropInstance an instance was cancelled by one of the
+	// TypeDropEvent an instance was cancelled by one of the
 	// parties involved
-	TypeDropInstance EventType = "dropInstance"
-	// TypeNewInstance a new Instance was created
-	TypeNewInstance EventType = "new_instance"
-	// TypeNewMessage a new message was created
-	// for an Instance
-	TypeNewMessage EventType = "new_message"
+	TypeDropEvent EventType = "drop"
+	// TypeNewEvent a new Instance was created
+	TypeNewEvent EventType = "new"
+	// TypeUpdateEvent an action was run on an instance
+	TypeUpdateEvent EventType = "update"
 )
 
 // Event is used by one Node to notify another of a BSPL
 // action
 type Event interface {
-	// Argument of an Event
+	// Argument of the event. If it is New or Update it
+	// will be an Instance, if it is Drop it will be the
+	// motive.
 	Argument() interface{}
 	// ID of the Event
 	ID() string
@@ -41,7 +42,7 @@ type Event interface {
 // EventWrapper is used by different event types
 // to marshal themselves
 type EventWrapper struct {
-	Argument    string    `json:"arguments"`
+	Argument    string    `json:"argument"`
 	ID          string    `json:"id"`
 	InstanceKey string    `json:"instance_key"`
 	Type        EventType `json:"event_type"`
@@ -64,7 +65,7 @@ func ID(marshalledEvent []byte) (string, error) {
 		return "", err
 	}
 	switch ge.Type {
-	case TypeDropInstance, TypeNewInstance, TypeNewMessage:
+	case TypeDropEvent, TypeNewEvent, TypeUpdateEvent:
 		break
 	default:
 		return "", errors.New("Unable to identify event type")
@@ -79,7 +80,7 @@ func Type(marshalledEvent []byte) (EventType, error) {
 		return "", err
 	}
 	switch ge.Type {
-	case TypeDropInstance, TypeNewInstance, TypeNewMessage:
+	case TypeDropEvent, TypeNewEvent, TypeUpdateEvent:
 		break
 	default:
 		return "", errors.New("Unable to identify event type")
@@ -96,20 +97,20 @@ func GetInstanceKey(marshalledEvent []byte) (string, error) {
 	}
 	var event Event
 	switch t {
-	case TypeDropInstance:
-		var a DropInstance
+	case TypeDropEvent:
+		var a DropEvent
 		event, err = a.Unmarshal(marshalledEvent)
 		if err != nil {
 			return "", err
 		}
-	case TypeNewInstance:
-		var ni NewInstance
+	case TypeNewEvent:
+		var ni NewEvent
 		event, err = ni.Unmarshal(marshalledEvent)
 		if err != nil {
 			return "", err
 		}
-	case TypeNewMessage:
-		var nm NewMessage
+	case TypeUpdateEvent:
+		var nm UpdateEvent
 		event, err = nm.Unmarshal(marshalledEvent)
 		if err != nil {
 			return "", err
@@ -128,30 +129,30 @@ func RunEvent(r bspl.Reasoner, marshalledEvent []byte) error {
 		return err
 	}
 	switch t {
-	case TypeDropInstance:
-		var a DropInstance
+	case TypeDropEvent:
+		var a DropEvent
 		event, err := a.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
-		a = event.(DropInstance)
+		a = event.(DropEvent)
 		return r.DropInstance(a.InstanceKey(), a.Motive())
-	case TypeNewInstance:
-		var ni NewInstance
+	case TypeNewEvent:
+		var ni NewEvent
 		event, err := ni.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
-		ni = event.(NewInstance)
+		ni = event.(NewEvent)
 		return r.RegisterInstance(ni.Instance())
-	case TypeNewMessage:
-		var nm NewMessage
+	case TypeUpdateEvent:
+		var nm UpdateEvent
 		event, err := nm.Unmarshal(marshalledEvent)
 		if err != nil {
 			return err
 		}
-		nm = event.(NewMessage)
-		return r.RegisterMessage(nm.InstanceKey(), nm.Message())
+		nm = event.(UpdateEvent)
+		return r.UpdateInstance(nm.Instance())
 	}
 	return nil
 }

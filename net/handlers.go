@@ -26,7 +26,7 @@ func (n *Node) addRemotePeer(stream network.Stream) {
 	// store new peer and multiaddr
 	remotePeer := stream.Conn().RemotePeer()
 	remoteAddrs := []multiaddr.Multiaddr{stream.Conn().RemoteMultiaddr()}
-	logger.Infof("Added address '%s' for peer '%s'", remoteAddrs[0], remotePeer.Pretty())
+	logger.Debugf("Added address '%s' for peer '%s'", remoteAddrs[0], remotePeer.Pretty())
 	n.host.Peerstore().AddAddrs(remotePeer, remoteAddrs, peerstore.PermanentAddrTTL)
 }
 
@@ -42,7 +42,7 @@ func (n *Node) discoveryHandler(stream network.Stream) {
 		stream.Close()
 	}()
 
-	logger.Info("Opened new BSPL protocol discovery stream")
+	logger.Debug("Opened new BSPL protocol discovery stream")
 	n.addRemotePeer(stream)
 
 	var wg sync.WaitGroup
@@ -69,7 +69,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup, sende
 
 	// if  the protocol list was empty, return
 	if len(bProtos) == 1 && len(bProtos[0]) == 1 && bytes.Equal(bProtos[0], []byte{exchangeEnd}) {
-		logger.Info("No new protocols discovered")
+		logger.Debug("No new protocols discovered")
 		return
 	}
 	// parse protocols
@@ -89,7 +89,7 @@ func (n *Node) discoveryReadData(rw *bufio.ReadWriter, wg *sync.WaitGroup, sende
 	for _, s := range services {
 		sb.WriteString(s.Protocol.String())
 	}
-	logger.Info(sb.String())
+	logger.Debug(sb.String())
 }
 
 // discoveryWriteData transmits the BSPL protocols of this node to the other
@@ -110,7 +110,7 @@ func (n *Node) discoveryWriteData(rw *bufio.ReadWriter, wg *sync.WaitGroup) {
 	rw.WriteByte(exchangeEnd)
 
 	if err := rw.Flush(); err != nil {
-		logger.Infof("Error while writing protocol exchange: %s", err)
+		logger.Debugf("Error while writing protocol exchange: %s", err)
 		panic(err)
 	}
 }
@@ -122,12 +122,12 @@ func (n *Node) echoHandler(stream network.Stream) {
 	// unexpectedly
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Infof("Recovered from error in protocol echo: %s", r)
+			logger.Debugf("Recovered from error in protocol echo: %s", r)
 		}
 		stream.Close()
 
 	}()
-	logger.Info("Opened new Echo stream")
+	logger.Debug("Opened new Echo stream")
 	n.addRemotePeer(stream)
 
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -141,19 +141,19 @@ func (n *Node) echoHandler(stream network.Stream) {
 func echoHandlerRead(rw *bufio.ReadWriter) []byte {
 	b, err := rw.ReadBytes(exchangeEnd)
 	if err != nil {
-		logger.Info("Error while reading echo message: %s", err)
+		logger.Debug("Error while reading echo message: %s", err)
 		panic(err)
 	}
-	logger.Infof("Received echo message: %s", string(b))
+	logger.Debugf("Received echo message: %s", string(b))
 	return b
 }
 
 // echoHandlerWrite and echoHandlerRead are very short but useful for testing
 func echoHandlerWrite(rw *bufio.ReadWriter, response []byte) {
-	logger.Infof("Send echo message: %s", string(response))
+	logger.Debugf("Send echo message: %s", string(response))
 	rw.Write(response)
 	if err := rw.Flush(); err != nil {
-		logger.Infof("Error while writing echo message: %s", err)
+		logger.Debugf("Error while writing echo message: %s", err)
 		panic(err)
 	}
 }
@@ -167,7 +167,7 @@ func (n *Node) eventHandler(stream network.Stream) {
 			stream.Close()
 		}
 	}()
-	logger.Info("Opened new Echo stream")
+	logger.Debug("Opened new Echo stream")
 	n.addRemotePeer(stream)
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 	err := n.runEvent(rw, stream.Conn().RemotePeer())
@@ -179,7 +179,7 @@ func (n *Node) eventHandler(stream network.Stream) {
 	}
 	rw.WriteByte(exchangeEnd)
 	if err := rw.Flush(); err != nil {
-		logger.Infof("Error while writing echo message: %s", err)
+		logger.Debugf("Error while writing echo message: %s", err)
 		panic(err)
 	}
 }
@@ -208,7 +208,7 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 	}
 	// check if the instance has a peer assigned
 	s, found := n.OpenInstances[instanceKey]
-	logger.Infof("Run event '%s' for node '%s'", t, sender)
+	logger.Debugf("Run event '%s' for node '%s'", t, sender)
 	switch t {
 	case events.TypeDropInstance, events.TypeNewMessage:
 		// dropInstance and newmessage require an existing instance

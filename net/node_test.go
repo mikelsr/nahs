@@ -9,7 +9,7 @@ import (
 
 func TestMain(m *testing.M) {
 	log.SetAllLoggers(log.LevelWarn)
-	log.SetLogLevel(LogName, "info")
+	log.SetLogLevel(LogName, "debug")
 
 	testKeys = make([]*crypto.PrivKey, testNodeN)
 	_loadTestKeys()

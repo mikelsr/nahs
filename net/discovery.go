@@ -37,7 +37,7 @@ func (n *Node) configDiscovery() {
 			if err := n.host.Connect(n.context, *peerinfo); err != nil {
 				logger.Warning(err)
 			} else {
-				logger.Info("Connection established with bootstrap node:", *peerinfo)
+				logger.Debug("Connection established with bootstrap node:", *peerinfo)
 			}
 		}()
 	}
@@ -49,7 +49,7 @@ func (n *Node) configDiscovery() {
 
 // Announce self in network
 func (n *Node) Announce() {
-	logger.Info("Announce self")
+	logger.Debug("Announce self")
 	routingDiscovery := discovery.NewRoutingDiscovery(n.dht)
 	discovery.Advertise(n.context, routingDiscovery, rendezvousString)
 }
@@ -66,7 +66,7 @@ func (n *Node) FindNodes() {
 		if peer.ID == n.ID() {
 			continue
 		}
-		logger.Infof("Found peer: %s", peer.ID)
+		logger.Debugf("Found peer: %s", peer.ID)
 		n.host.Peerstore().AddAddrs(peer.ID, peer.Addrs, peerstore.PermanentAddrTTL)
 
 		// Exchange known services with the node

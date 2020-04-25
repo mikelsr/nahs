@@ -95,7 +95,7 @@ func newNode(options ...libp2p.Option) *Node {
 	// set stream handlers
 	n.setStreamHandlers()
 
-	logger.Infof("Created node with ID '%s'.", h.ID())
+	logger.Debugf("Created node with ID '%s'.", h.ID())
 	return n
 }
 

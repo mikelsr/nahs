@@ -219,6 +219,10 @@ func (n *Node) runEvent(rw *bufio.ReadWriter, sender peer.ID) error {
 		if s.String() != sender.String() {
 			return ErrHandleEvent{ID: id, Reason: "Unauthorized"}
 		}
+		// remove event from OpenInstances
+		if t == events.TypeDropEvent {
+			delete(n.OpenInstances, instanceKey)
+		}
 	case events.TypeNewEvent:
 		// new requires the instance to no exist
 		if found {

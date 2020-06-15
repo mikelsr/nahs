@@ -33,7 +33,7 @@ type Node struct {
 	// verify that the node sending the event is the one
 	// who created it
 	OpenInstances map[string]peer.ID
-	// routing // TODO: rendezvous point?
+	// routing for rendezvous
 	routing *discovery.RoutingDiscovery
 	// protocols this node offers
 	protocols []bspl.Protocol

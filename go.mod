@@ -22,7 +22,6 @@ require (
 	github.com/mikelsr/bspl v0.0.0-20200425163007-bda5911e92ba
 	github.com/multiformats/go-multiaddr v0.2.1
 	github.com/multiformats/go-multibase v0.0.2 // indirect
-	github.com/syndtr/goleveldb v1.0.0
 	go.uber.org/zap v1.15.0 // indirect
 	golang.org/x/crypto v0.0.0-20200423211502-4bdfaf469ed5 // indirect
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd // indirect

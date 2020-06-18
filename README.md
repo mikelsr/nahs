@@ -10,7 +10,7 @@ Network of Autonomous and Heterogeneous Services (NaHS)
 
 ## Modules
 
-* `events`: Describes BSPL instance events according to the toy [implementation](https://github.com/mikelsr/bspl/tree/master/implementation). As of now there are three events:
+* `events`: Describes BSPL instance events according to the [implementation](https://github.com/mikelsr/bspl/tree/master/implementation). As of now there are three events:
 
   * `NewEvent` to create an [instance](https://github.com/mikelsr/bspl/blob/master/bspl.go#L27) of a [protocol](https://github.com/mikelsr/bspl/blob/master/bspl.go#L20).
 
@@ -18,7 +18,7 @@ Network of Autonomous and Heterogeneous Services (NaHS)
 
   * `DropEvent` to cancel an instance for any reason.
 
-* `net`: Networking components. The main struct is [`Node`](https://github.com/mikelsr/nahs/blob/master/net/node.go). A node has a [BSPL reasoner](https://github.com/mikelsr/bspl/blob/master/bspl.go#L25) and a [LibP2P host](https://github.com/libp2p/go-libp2p-core/blob/master/host/host.go), implementing methods and handlers to send BSPL components between network peers. Nodes discover each other either manually or with the libp2p implementation of rendezvous (**preferred**) using the default bootstrap nodes. Private network logic is implemented but disabled for now.
+* `net`: Networking components. The main struct is [`Node`](https://github.com/mikelsr/nahs/blob/master/net/node.go). A node has a [BSPL reasoner](https://github.com/mikelsr/bspl/blob/master/bspl.go#L25) and a [LibP2P host](https://github.com/libp2p/go-libp2p-core/blob/master/host/host.go), implementing methods and handlers to send BSPL components between network peers. Nodes discover each other either manually or with the libp2p implementation of rendezvous (**preferred**) using the default bootstrap nodes.
 
 ## Other folders
 
